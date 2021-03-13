@@ -2,6 +2,7 @@ package godestonegt
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -14,6 +15,7 @@ import (
 )
 
 const baseUrl string = "https://www.garlandtools.org"
+const notFound = "no entity matching the criteria was found"
 
 var languages = []string{"en", "de", "fr", "ja"}
 
@@ -61,20 +63,20 @@ func (gt *GarlandToolsProvider) request(url string) ([]byte, error) {
 	return body, nil
 }
 
-func (gt *GarlandToolsProvider) Achievement(name string) *models.NamedEntity {
+func (gt *GarlandToolsProvider) Achievement(name string) (*models.NamedEntity, error) {
 	urlFmt := baseUrl + site.AchievementIndexPath
 
 	indices := make(map[string]*site.AchievementIndex, 4)
 	for _, lang := range languages {
 		data, err := gt.request(fmt.Sprintf(urlFmt, lang))
 		if err != nil {
-			return nil
+			return nil, err
 		}
 
 		index := &site.AchievementIndex{}
 		err = json.Unmarshal(data, index)
 		if err != nil {
-			return nil
+			return nil, err
 		}
 
 		indices[lang] = index
@@ -83,53 +85,53 @@ func (gt *GarlandToolsProvider) Achievement(name string) *models.NamedEntity {
 	table := processing.BuildAchievementsTable(indices["en"], indices["de"], indices["fr"], indices["ja"])
 	for _, entry := range table.Achievements {
 		if entry.Name == name {
-			return &entry
+			return &entry, nil
 		}
 	}
 
-	return nil
+	return nil, errors.New(notFound)
 }
 
-func (gt *GarlandToolsProvider) ClassJob(name string) *models.NamedEntity {
-	return nil
+func (gt *GarlandToolsProvider) ClassJob(name string) (*models.NamedEntity, error) {
+	return nil, nil
 }
 
-func (gt *GarlandToolsProvider) Deity(name string) *models.NamedEntity {
-	return nil
+func (gt *GarlandToolsProvider) Deity(name string) (*models.NamedEntity, error) {
+	return nil, nil
 }
 
-func (gt *GarlandToolsProvider) GrandCompany(name string) *models.NamedEntity {
-	return nil
+func (gt *GarlandToolsProvider) GrandCompany(name string) (*models.NamedEntity, error) {
+	return nil, nil
 }
 
-func (gt *GarlandToolsProvider) Item(name string) *models.NamedEntity {
-	return nil
+func (gt *GarlandToolsProvider) Item(name string) (*models.NamedEntity, error) {
+	return nil, nil
 }
 
-func (gt *GarlandToolsProvider) Minion(name string) *models.NamedEntity {
-	return nil
+func (gt *GarlandToolsProvider) Minion(name string) (*models.NamedEntity, error) {
+	return nil, nil
 }
 
-func (gt *GarlandToolsProvider) Mount(name string) *models.NamedEntity {
-	return nil
+func (gt *GarlandToolsProvider) Mount(name string) (*models.NamedEntity, error) {
+	return nil, nil
 }
 
-func (gt *GarlandToolsProvider) Race(name string) *models.GenderedEntity {
-	return nil
+func (gt *GarlandToolsProvider) Race(name string) (*models.GenderedEntity, error) {
+	return nil, nil
 }
 
-func (gt *GarlandToolsProvider) Reputation(name string) *models.NamedEntity {
-	return nil
+func (gt *GarlandToolsProvider) Reputation(name string) (*models.NamedEntity, error) {
+	return nil, nil
 }
 
-func (gt *GarlandToolsProvider) Title(name string) *models.TitleInternal {
-	return nil
+func (gt *GarlandToolsProvider) Title(name string) (*models.TitleInternal, error) {
+	return nil, nil
 }
 
-func (gt *GarlandToolsProvider) Town(name string) *models.NamedEntity {
-	return nil
+func (gt *GarlandToolsProvider) Town(name string) (*models.NamedEntity, error) {
+	return nil, nil
 }
 
-func (gt *GarlandToolsProvider) Tribe(name string) *models.GenderedEntity {
-	return nil
+func (gt *GarlandToolsProvider) Tribe(name string) (*models.GenderedEntity, error) {
+	return nil, nil
 }
