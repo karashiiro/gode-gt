@@ -76,19 +76,28 @@ func (gt *GarlandToolsProvider) request(url string) ([]byte, error) {
 	return body, nil
 }
 
+func (gt *GarlandToolsProvider) getResource(url string, v interface{}) error {
+	data, err := gt.request(url)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(data, v)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (gt *GarlandToolsProvider) getAchievementsTable() (*processing.AchievementsTable, error) {
 	if gt.achievementsTable == nil {
 		urlFmt := baseUrl + site.AchievementIndexPath
 
 		indices := make(map[string]*site.AchievementIndex, 4)
 		for _, lang := range languages {
-			data, err := gt.request(fmt.Sprintf(urlFmt, lang))
-			if err != nil {
-				return nil, err
-			}
-
 			index := &site.AchievementIndex{}
-			err = json.Unmarshal(data, index)
+			err := gt.getResource(fmt.Sprintf(urlFmt, lang), index)
 			if err != nil {
 				return nil, err
 			}
