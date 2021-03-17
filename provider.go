@@ -48,6 +48,34 @@ func New() *GarlandToolsProvider {
 	return &gt
 }
 
+// WithHttpClient replaces the default-constructed HTTP client
+// with a user-provided one.
+func (gt *GarlandToolsProvider) WithHttpClient(client *http.Client) *GarlandToolsProvider {
+	gt.client = client
+	return gt
+}
+
+// AsProvider reinterprets the provided service as a DataProvider.
+func (gt *GarlandToolsProvider) AsProvider() provider.DataProvider {
+	return gt
+}
+
+func (gt *GarlandToolsProvider) request(url string) ([]byte, error) {
+	res, err := gt.client.Get(url)
+	if err != nil {
+		return nil, err
+	}
+
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
+}
+
 func (gt *GarlandToolsProvider) getAchievementsTable() (*processing.AchievementsTable, error) {
 	if gt.achievementsTable == nil {
 		urlFmt := baseUrl + site.AchievementIndexPath
@@ -115,34 +143,6 @@ func (gt *GarlandToolsProvider) getTownTable() (*processing.TownTable, error) {
 
 func (gt *GarlandToolsProvider) getTribeTable() (*processing.TribeTable, error) {
 	return nil, nil
-}
-
-// WithHttpClient replaces the default-constructed HTTP client
-// with a user-provided one.
-func (gt *GarlandToolsProvider) WithHttpClient(client *http.Client) *GarlandToolsProvider {
-	gt.client = client
-	return gt
-}
-
-// AsProvider reinterprets the provided service as a DataProvider.
-func (gt *GarlandToolsProvider) AsProvider() provider.DataProvider {
-	return gt
-}
-
-func (gt *GarlandToolsProvider) request(url string) ([]byte, error) {
-	res, err := gt.client.Get(url)
-	if err != nil {
-		return nil, err
-	}
-
-	defer res.Body.Close()
-
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return body, nil
 }
 
 func (gt *GarlandToolsProvider) Achievement(name string) (*models.NamedEntity, error) {
