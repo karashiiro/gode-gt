@@ -5,7 +5,7 @@ import (
 	"github.com/xivapi/godestone/v2/provider/models"
 )
 
-// AcheivementsTable represents the reconstructed achievements table.
+// AchievementsTable represents the reconstructed achievements table.
 type AchievementsTable struct {
 	Achievements []models.NamedEntity
 }

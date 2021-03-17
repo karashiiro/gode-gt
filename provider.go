@@ -21,6 +21,19 @@ var languages = []string{"en", "de", "fr", "ja"}
 
 type GarlandToolsProvider struct {
 	client *http.Client
+
+	achievementsTable *processing.AchievementsTable
+	classJobTable     *processing.ClassJobTable
+	deityTable        *processing.DeityTable
+	grandCompanyTable *processing.GrandCompanyTable
+	itemTable         *processing.ItemTable
+	minionTable       *processing.MinionTable
+	mountTable        *processing.MountTable
+	raceTable         *processing.RaceTable
+	reputationTable   *processing.ReputationTable
+	titleTable        *processing.TitleTable
+	townTable         *processing.TownTable
+	tribeTable        *processing.TribeTable
 }
 
 // New constructs a Garland Tools-backed data provider for use
@@ -33,6 +46,75 @@ func New() *GarlandToolsProvider {
 	}
 
 	return &gt
+}
+
+func (gt *GarlandToolsProvider) getAchievementsTable() (*processing.AchievementsTable, error) {
+	if gt.achievementsTable == nil {
+		urlFmt := baseUrl + site.AchievementIndexPath
+
+		indices := make(map[string]*site.AchievementIndex, 4)
+		for _, lang := range languages {
+			data, err := gt.request(fmt.Sprintf(urlFmt, lang))
+			if err != nil {
+				return nil, err
+			}
+
+			index := &site.AchievementIndex{}
+			err = json.Unmarshal(data, index)
+			if err != nil {
+				return nil, err
+			}
+
+			indices[lang] = index
+		}
+
+		gt.achievementsTable = processing.BuildAchievementsTable(indices["en"], indices["de"], indices["fr"], indices["ja"])
+	}
+	return gt.achievementsTable, nil
+}
+
+func (gt *GarlandToolsProvider) getClassJobTable() (*processing.ClassJobTable, error) {
+	return nil, nil
+}
+
+func (gt *GarlandToolsProvider) getDeityTable() (*processing.DeityTable, error) {
+	return nil, nil
+}
+
+func (gt *GarlandToolsProvider) getGrandCompanyTable() (*processing.GrandCompanyTable, error) {
+	return nil, nil
+}
+
+func (gt *GarlandToolsProvider) getItemTable() (*processing.ItemTable, error) {
+	return nil, nil
+}
+
+func (gt *GarlandToolsProvider) getMinionTable() (*processing.MinionTable, error) {
+	return nil, nil
+}
+
+func (gt *GarlandToolsProvider) getMountTable() (*processing.MountTable, error) {
+	return nil, nil
+}
+
+func (gt *GarlandToolsProvider) getRaceTable() (*processing.RaceTable, error) {
+	return nil, nil
+}
+
+func (gt *GarlandToolsProvider) getReputationTable() (*processing.ReputationTable, error) {
+	return nil, nil
+}
+
+func (gt *GarlandToolsProvider) getTitleTable() (*processing.TitleTable, error) {
+	return nil, nil
+}
+
+func (gt *GarlandToolsProvider) getTownTable() (*processing.TownTable, error) {
+	return nil, nil
+}
+
+func (gt *GarlandToolsProvider) getTribeTable() (*processing.TribeTable, error) {
+	return nil, nil
 }
 
 // WithHttpClient replaces the default-constructed HTTP client
@@ -64,25 +146,11 @@ func (gt *GarlandToolsProvider) request(url string) ([]byte, error) {
 }
 
 func (gt *GarlandToolsProvider) Achievement(name string) (*models.NamedEntity, error) {
-	urlFmt := baseUrl + site.AchievementIndexPath
-
-	indices := make(map[string]*site.AchievementIndex, 4)
-	for _, lang := range languages {
-		data, err := gt.request(fmt.Sprintf(urlFmt, lang))
-		if err != nil {
-			return nil, err
-		}
-
-		index := &site.AchievementIndex{}
-		err = json.Unmarshal(data, index)
-		if err != nil {
-			return nil, err
-		}
-
-		indices[lang] = index
+	table, err := gt.getAchievementsTable()
+	if err != nil {
+		return nil, err
 	}
 
-	table := processing.BuildAchievementsTable(indices["en"], indices["de"], indices["fr"], indices["ja"])
 	for _, entry := range table.Achievements {
 		if entry.Name == name {
 			return &entry, nil
