@@ -8,3 +8,12 @@ type AchievementIndex struct {
 		Name string `json:"n"`
 	} `json:"browse"`
 }
+
+// CoreData represents the structure of the main data index,
+// reduced to the fields we use.
+type CoreData struct {
+	Jobs []struct {
+		ID   uint32 `json:"id"`
+		Name string `json:"name"`
+	} `json:"jobs"`
+}

@@ -22,6 +22,8 @@ var languages = []string{"en", "de", "fr", "ja"}
 type GarlandToolsProvider struct {
 	client *http.Client
 
+	coreData map[string]*site.CoreData
+
 	achievementsTable *processing.AchievementsTable
 	classJobTable     *processing.ClassJobTable
 	deityTable        *processing.DeityTable
@@ -90,6 +92,26 @@ func (gt *GarlandToolsProvider) getResource(url string, v interface{}) error {
 	return nil
 }
 
+func (gt *GarlandToolsProvider) getCoreData() (map[string]*site.CoreData, error) {
+	if gt.coreData == nil {
+		urlFmt := baseUrl + site.CoreDataPath
+
+		indices := make(map[string]*site.CoreData, 4)
+		for _, lang := range languages {
+			index := &site.CoreData{}
+			err := gt.getResource(fmt.Sprintf(urlFmt, lang), index)
+			if err != nil {
+				return nil, err
+			}
+
+			indices[lang] = index
+		}
+
+		gt.coreData = indices
+	}
+	return gt.coreData, nil
+}
+
 func (gt *GarlandToolsProvider) getAchievementsTable() (*processing.AchievementsTable, error) {
 	if gt.achievementsTable == nil {
 		urlFmt := baseUrl + site.AchievementIndexPath
@@ -111,7 +133,15 @@ func (gt *GarlandToolsProvider) getAchievementsTable() (*processing.Achievements
 }
 
 func (gt *GarlandToolsProvider) getClassJobTable() (*processing.ClassJobTable, error) {
-	return nil, nil
+	if gt.classJobTable == nil {
+		coreData, err := gt.getCoreData()
+		if err != nil {
+			return nil, err
+		}
+
+		gt.classJobTable = processing.BuildClassJobTable(coreData["en"], coreData["de"], coreData["fr"], coreData["ja"])
+	}
+	return gt.classJobTable, nil
 }
 
 func (gt *GarlandToolsProvider) getDeityTable() (*processing.DeityTable, error) {
@@ -170,7 +200,18 @@ func (gt *GarlandToolsProvider) Achievement(name string) (*models.NamedEntity, e
 }
 
 func (gt *GarlandToolsProvider) ClassJob(name string) (*models.NamedEntity, error) {
-	return nil, nil
+	table, err := gt.getClassJobTable()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, entry := range table.ClassJobs {
+		if entry.Name == name {
+			return &entry, nil
+		}
+	}
+
+	return nil, errors.New(notFound)
 }
 
 func (gt *GarlandToolsProvider) Deity(name string) (*models.NamedEntity, error) {

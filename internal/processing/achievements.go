@@ -10,7 +10,7 @@ type AchievementsTable struct {
 	Achievements []models.NamedEntity
 }
 
-// BuildAchievementsTable synthesized achievement indices in each language
+// BuildAchievementsTable synthesizes achievement indices in each language
 // into a reconstructed achievements table.
 func BuildAchievementsTable(en *site.AchievementIndex, de *site.AchievementIndex, fr *site.AchievementIndex, ja *site.AchievementIndex) *AchievementsTable {
 	achievements := make([]models.NamedEntity, len(en.Browse))
